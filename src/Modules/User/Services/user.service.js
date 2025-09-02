@@ -5,6 +5,8 @@ import { nanoid } from 'nanoid';
 import { v4 as uuidv4 } from 'uuid';
 import { generateToken, verifyToken } from '../../../Utils/tokens.utils.js';
 import BlackListedTokens from '../../../DB/Models/black-listed-tokens.model.js';
+import {OAuth2Client} from 'google-auth-library'
+
 // import { use } from 'react';
 
 
@@ -12,10 +14,11 @@ export const SignUpService = async (req, res, next) => {
 
   const { firstName, lastName, email, password, age, gender, phoneNumber } = req.body;
 
-  const isEmailExist = await userModel.findOne({ email });
-  if (isEmailExist) {
-    return res.status(400).json({ message: 'Email already registered' });
-  }
+  const isEmailExist = await userModel.findOne({ email, provider: ProvidersEnum.LOCAL });
+    if (isEmailExist) {
+        return res.status(400).json({ message: "Email already exists" });
+    }
+
 
   const hashedPassword = bcrypt.hashSync(password, 10);
   const confirmationOtp = nanoid(6);
@@ -44,7 +47,7 @@ export const SignUpService = async (req, res, next) => {
 export const SignInService = async (req, res, next) => {
   const { email, password } = req.body;
 
-  const user = await userModel.findOne({ email });
+  const user = await userModel.findOne({ email,provider: ProvidersEnum.LOCAL  });
   console.log("All users in DB:", user);
   if (!user) {
     return res.status(404).json({ message: "Invalid email or password" });
@@ -171,24 +174,19 @@ export const UpdateAccountService = async (req, res) => {
 
 // list
 
-// export const userData = async (req, res, next) => {
-//   try {
-//     const { userId } = req.token; 
+export const ListUsersService = async (req, res) => {
+    let users = await userModel.find()
+    users = users.map((user) => {
+        return {
+            ...user._doc,
+            phoneNumber: decrypt(user.phoneNumber)
+        }
+    })
 
-//     const user = await userModel.findById(userId); 
+    res.status(200).json({ users })
+}
 
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
 
-//     const userData = user.toObject();
-//     delete userData.password;
-
-//     return res.status(200).json({ user: userData });
-//   } catch (error) {
-//     next(error); 
-//   }
-// };
 
 
 export const LogoutService = async (req, res) => {
@@ -230,3 +228,56 @@ export const RefreshTokenService = async (req,res)=>{
 
   return res.status(200).json({message:"User token is refreshed successfully" , accessToken})
 }
+
+export const SignUpServiceGmail = async (req, res) => {
+  const { idToken } = req.body;
+
+  const client = new OAuth2Client();
+  const ticket = await client.verifyIdToken({
+    idToken,
+    audience: process.env.WEB_CLIENT_ID,
+  });
+
+  const { email, given_name, family_name, email_verified } = ticket.getPayload();
+  if (!email_verified) {
+    return res.status(400).json({ message: "Email is not verified" });
+  }
+
+  // const isUserExist = await userModel.findOne({ email });
+  const isUserExist = await User.findOne({ googleSub: sub, provider: ProvidersEnum.GOOGLE });
+let newUser;
+if (!isUserExist) {
+    newUser = await User.create({
+        firstName: given_name,
+        lastName: family_name || '',
+        email,
+        provider: ProvidersEnum.GOOGLE,
+        isConfirmed: true,
+        password: hashSync(uniqueString() + process.env.SALT_ROUNDS)
+    });
+} else {
+  newUser=isUserExist
+    isUserExist.email = email;
+    isUserExist.firstName = given_name;
+    isUserExist.lastName = family_name || '';
+    await isUserExist.save();
+}
+
+    const accessToken = generateToken(
+    { _id: newUser._id, email: newUser.email },
+    process.env.JWT_ACCESS_SECRET,
+    {
+      expiresIn: "1h",
+      jwtid: uuidv4()
+    }
+  )
+
+  const refreshToken = generateToken(
+  { _id: newUser._id, email: newUser.email },
+  process.env.JWT_REFRESH_SECRET,
+  { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN, jwtid: uuidv4() }
+);
+
+
+  res.status(200).json({ message: "User signed up successfully", payload: user });
+}; 

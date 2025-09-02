@@ -1,7 +1,7 @@
 
 
 import { Router } from "express";
-import { ConfirmEmailService, DeleteAccountService, ListUsersService, LogoutService, RefreshTokenService, SignInService, SignUpService, UpdateAccountService } from "./Services/user.service.js";
+import { ConfirmEmailService, DeleteAccountService, ListUsersService, LogoutService, RefreshTokenService, SignInService, SignUpService, SignUpServiceGmail, UpdateAccountService } from "./Services/user.service.js";
 import { authenticationMiddleware } from "../../Middleware/authentication.middleware.js";
 import { authorizationMiddleware } from "../../Middleware/authorization.middleware.js";
 import { Privillages } from "../../Common/enums/user.enum.js";

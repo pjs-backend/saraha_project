@@ -25,3 +25,7 @@ export const SkillLevelEnum = {
   ADVANCED: "advanced"
 };
 
+export const ProvidersEnum = {
+  LOCAL: "local",
+  GOOGLE: "google",
+};

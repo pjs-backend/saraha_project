@@ -3,24 +3,34 @@ import userRouter from "./src/Modules/User/user.controller.js";
 import messageRouter from "./src/Modules/Messages/message.controller.js";
 import dbConnection from "./src/DB/db.connection.js";
 import "dotenv/config";
+import cors from 'cors'
+import helmet from "helmet";
 
 const app = express();
 
 // Parsing middleware
 app.use(express.json());
-const whitelist =process.env.WHITE_LISTED_ORIGINS
-const corsOptions = {
-    origin: function (origin, callback) {
-        console.log("The current origin is ", origin);
+const whitelist = process.env.WHITE_LISTED_ORIGINS?.split(",") || [];
 
-        if (whitelist.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
+const corsOptions = {
+  origin: function (origin, callback) {
+    console.log("The current origin is ", origin);
+
+    // Postman أو طلبات بدون Origin
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
     }
+  }
 };
+
 app.use(cors(corsOptions));
+
+app.use(helmet( {
+  referrerPolicy:{policy:'origin-when-cross-origin'}
+}))
+
 
 
  dbConnection();
