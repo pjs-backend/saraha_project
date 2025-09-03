@@ -1,6 +1,8 @@
 
 import mongoose from "mongoose";
 import { GenderEnum, ProvidersEnum, RolesEnum } from "../../Common/enums/user.enum.js";
+// import { GoogleAuth } from "google-auth-library";
+// import { Profiler } from "react";
 
 const userScema = new mongoose.Schema({
     firstName: {
@@ -20,15 +22,12 @@ const userScema = new mongoose.Schema({
         trim: true
     },
     age: {
-        type: Number,
-        required: true,
-        minLength: 3,
-        maxLength: 20,
-        lowercase: true,
-        index: {
-            name: 'idx_age'
-        }
-    },
+  type: Number,
+  required: true,
+  min: 1,
+  max: 120,
+  index: true
+},
     gender: {
         type: String,
         // enum: ['male', 'female'],
@@ -80,7 +79,9 @@ const userScema = new mongoose.Schema({
     type: String,
     enum: Object.values(ProvidersEnum),
     default: ProvidersEnum.LOCAL
-  }
+  },
+  GoogleSub:String,
+  ProfilePicture:String,
 
 },
     {

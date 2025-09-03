@@ -1,7 +1,7 @@
 import multer from "multer";
 import fs from "fs";
 import path from "path";
-import { fileTypes } from "../Common/constants/file.constants.js";
+import { allowedFileExtensions, fileTypes } from "../Common/constants/file.constants.js";
 
 export const localUpload = () => {
   const uploadPath = path.join(process.cwd(), "uploads");
@@ -20,23 +20,23 @@ export const localUpload = () => {
     }
   });
 
-  const fileFilter = (req, file, cb) => {
+const fileFilter = (req, file, cb) => {
+  const fileKey = file.mimetype.split('/')[0]; // image, video, audio, application
+  const fileType = fileTypes[fileKey.toUpperCase()];
+  console.log("fileType:", fileType);
 
-  const fileKey = file.mimetype.split('/')[0].toUpperCase();
-  const fileType = fileTypes[fileKey];
-  console.log(fileType);
-
-  if (!fileType) return cb(new Error('Invalid file type'), false);
+  if (!fileType) return cb(new Error("Invalid file type"), false);
 
   const fileExtension = file.mimetype.split('/')[1];
   console.log(fileExtension, "extensions:", allowedFileExtensions[fileKey]);
 
   if (!allowedFileExtensions[fileKey].includes(fileExtension)) {
-    return cb(new Error('Invalid file extension'), false);
+    return cb(new Error("Invalid file extension"), false);
   }
 
   return cb(null, true);
 };
+
 
 
   // return multer({limites:{files:2}, fileFilter, storage });

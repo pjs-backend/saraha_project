@@ -20,7 +20,19 @@ router.delete('/delete',authenticationMiddleware,DeleteAccountService)
 router.post('/refresh-token',RefreshTokenService);
 router.put('/Confirm',ConfirmEmailService)
 router.post('/Logout',LogoutService)
-router.post('/upload-profile',localUpload().single('profile'),UploadProfileService);
+router.post('/upload-profile',authenticationMiddleware,localUpload().single('profile'),UploadProfileService);
+// array('profile',3)
+// كده يعني اياخد تلت ملفات
+
+// router.post(
+//   '/upload-profile',
+//   localUpload({ folderPath: 'profiles' }).fields([
+//     { name: 'avatar', maxCount: 1 },
+//     { name: 'cover', maxCount: 1 }
+//   ]),
+//   UploadProfileService
+// );
+
 
 router.get('/list',
     authenticationMiddleware,

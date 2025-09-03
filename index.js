@@ -10,6 +10,9 @@ const app = express();
 
 // Parsing middleware
 app.use(express.json());
+
+app.use('/uploads',express.static('uploads'))
+
 const whitelist = process.env.WHITE_LISTED_ORIGINS?.split(",") || [];
 
 const corsOptions = {

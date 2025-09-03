@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { generateToken, verifyToken } from '../../../Utils/tokens.utils.js';
 import BlackListedTokens from '../../../DB/Models/black-listed-tokens.model.js';
 import {OAuth2Client} from 'google-auth-library'
+import { ProvidersEnum } from '../../../Common/enums/user.enum.js';
 
 // import { use } from 'react';
 
@@ -282,9 +283,12 @@ if (!isUserExist) {
   res.status(200).json({ message: "User signed up successfully", payload: user });
 }; 
 
-export const UploadProfileService = (req, res) => {
-  console.log('The file info after uploading', req.file);
-  console.log('The text fields', req.body);
+export const UploadProfileService = async (req, res) => {
 
-  return res.status(200).json({ message: "Profile uploaded successfully" });
-};
+    const { _id } = req.loggedInUser
+    const { path } = req.file
+
+    const user = await userModel.findByIdAndUpdate(_id, { profilePicture: path }, { new: true })
+    return res.status(200).json({ message: "Profile uploaded successfully", user })
+}
+
