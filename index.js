@@ -4,8 +4,8 @@ import messageRouter from "./src/Modules/Messages/message.controller.js";
 import dbConnection from "./src/DB/db.connection.js";
 import "dotenv/config";
 import cors from 'cors'
-import helmet from "helmet";
-
+import helmet from "helmet"; 
+// import { rateLimit } from 'express-rate-limit'
 const app = express();
 
 // Parsing middleware

@@ -281,3 +281,10 @@ if (!isUserExist) {
 
   res.status(200).json({ message: "User signed up successfully", payload: user });
 }; 
+
+export const UploadProfileService = (req, res) => {
+  console.log('The file info after uploading', req.file);
+  console.log('The text fields', req.body);
+
+  return res.status(200).json({ message: "Profile uploaded successfully" });
+};
